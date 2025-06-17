@@ -12,8 +12,8 @@
     body {
       margin: 0;
       font-family: 'Inter', sans-serif;
-      background: linear-gradient(to right, #1f2937, #0f172a);
-      color: #f8fafc;
+      background: #f9fafb;
+      color: #1f2937;
       display: flex;
       flex-direction: column;
       align-items: center;
@@ -22,25 +22,46 @@
       min-height: 100vh;
     }
     h1 {
-      font-size: 2.5rem;
+      font-size: 2.2rem;
       margin-bottom: 10px;
-      color: #38bdf8;
+      color: #111827;
     }
     #status {
       margin-bottom: 20px;
       font-size: 1rem;
-      color: #a5f3fc;
+      color: #374151;
+    }
+    #welcomeScreen {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 20px;
+    }
+    #welcomeScreen button {
+      background-color: #2563eb;
+      border: none;
+      color: white;
+      padding: 12px 24px;
+      border-radius: 8px;
+      font-weight: 600;
+      font-size: 1rem;
+      cursor: pointer;
+      transition: background 0.2s;
+    }
+    #welcomeScreen button:hover {
+      background-color: #1d4ed8;
     }
     #chat {
-      background: #1e293b;
-      border-radius: 16px;
+      display: none;
+      background: #ffffff;
+      border-radius: 12px;
       padding: 20px;
       width: 100%;
       max-width: 520px;
-      box-shadow: 0 6px 18px rgba(0,0,0,0.25);
-      display: flex;
+      box-shadow: 0 4px 16px rgba(0,0,0,0.1);
       flex-direction: column;
       gap: 12px;
+      border: 1px solid #e5e7eb;
     }
     #messages {
       list-style: none;
@@ -54,27 +75,27 @@
       scrollbar-width: thin;
     }
     #messages li {
-      padding: 12px 16px;
-      border-radius: 18px;
+      padding: 10px 14px;
+      border-radius: 16px;
       max-width: 80%;
       word-wrap: break-word;
       font-size: 0.95rem;
       line-height: 1.4;
     }
     .you {
-      background-color: #4ade80;
+      background-color: #d1fae5;
       align-self: flex-end;
-      color: #000;
+      color: #065f46;
     }
     .stranger {
-      background-color: #64748b;
+      background-color: #e0e7ff;
       align-self: flex-start;
-      color: #fff;
+      color: #3730a3;
     }
     .system {
       font-style: italic;
       text-align: center;
-      color: #cbd5e1;
+      color: #6b7280;
     }
     #inputArea {
       display: flex;
@@ -82,82 +103,314 @@
     }
     #msg {
       flex: 1;
-      padding: 12px;
-      border-radius: 12px;
-      border: none;
+      padding: 10px;
+      border-radius: 8px;
+      border: 1px solid #d1d5db;
       font-size: 1rem;
-      background: #334155;
-      color: #fff;
+      background: #f3f4f6;
+      color: #111827;
     }
     #msg:focus {
-      outline: 2px solid #38bdf8;
+      outline: 2px solid #2563eb;
     }
-    button {
-      background-color: #38bdf8;
+    button.send-btn {
+      background-color: #2563eb;
       border: none;
-      color: #000;
-      padding: 12px 20px;
-      border-radius: 12px;
-      font-weight: bold;
+      color: white;
+      padding: 10px 20px;
+      border-radius: 8px;
+      font-weight: 600;
       cursor: pointer;
       transition: background 0.2s;
     }
-    button:hover {
-      background-color: #0ea5e9;
+    button.send-btn:hover {
+      background-color: #1d4ed8;
     }
   </style>
 </head>
 <body>
   <h1>Anon Chat 💬</h1>
-  <div id="status">Connecting...</div>
+  <div id="status">Do you want to connect and chat anonymously?</div>
+
+  <div id="welcomeScreen">
+    <button onclick="startChat()">Start Anonymous Chat</button>
+  </div>
+
   <div id="chat">
     <ul id="messages"></ul>
     <div id="inputArea">
       <input id="msg" placeholder="Type a message..." autocomplete="off" />
-      <button onclick="send()">Send</button>
+      <button class="send-btn" onclick="send()">Send</button>
     </div>
   </div>
+
   <script src="https://cdn.socket.io/4.7.2/socket.io.min.js"></script>
   <script>
     const SERVER = 'https://anon-chat-server-9f1c.onrender.com';
-    const socket = io(SERVER);
+    let socket;
+    let isMatched = false;
 
     const statusEl = document.getElementById('status');
+    const chatBox = document.getElementById('chat');
+    const welcome = document.getElementById('welcomeScreen');
     const messagesEl = document.getElementById('messages');
     const inputEl = document.getElementById('msg');
 
-    let isMatched = false;
+    function startChat() {
+      welcome.style.display = 'none';
+      chatBox.style.display = 'flex';
+      statusEl.textContent = '🔌 Connecting...';
 
-    socket.on('connect', () => {
-      statusEl.textContent = '🟢 Connected - Waiting for a stranger...';
-    });
+      socket = io(SERVER);
 
-    socket.on('userCount', (count) => {
-      statusEl.textContent = `👥 ${count} user(s) online`;
-    });
+      socket.on('connect', () => {
+        statusEl.textContent = '🟢 Connected - Waiting for a stranger...';
+      });
 
-    socket.on('matched', () => {
-      isMatched = true;
-      statusEl.textContent = '🎯 Connected to a stranger!';
-      addSystemMessage('🎉 You are now connected to a stranger.');
-    });
+      socket.on('userCount', (count) => {
+        // Optional: live user count logic
+      });
 
-    socket.on('partnerDisconnected', () => {
-      isMatched = false;
-      statusEl.textContent = '⚠️ Stranger disconnected. Waiting for new match...';
-      addSystemMessage('⚠️ Stranger disconnected.');
-    });
+      socket.on('matched', () => {
+        isMatched = true;
+        statusEl.textContent = '🎯 Connected to a stranger!';
+        addSystemMessage('🎉 You are now connected to a stranger.');
+      });
 
-    socket.on('message', (msg) => {
-      addMessage(msg, 'stranger');
-    });
+      socket.on('partnerDisconnected', () => {
+        isMatched = false;
+        statusEl.textContent = '⚠️ Stranger disconnected. Waiting for new match...';
+        addSystemMessage('⚠️ Stranger disconnected.');
+      });
+
+      socket.on('message', (msg) => {
+        addMessage(msg, 'stranger');
+      });
+    }
 
     function send() {
       const msg = inputEl.value.trim();
       if (!msg || !isMatched) {
-        if (!isMatched) {
-          addSystemMessage('⏳ Still waiting for a match. Please wait...');
-        }
+        if (!isMatched) addSystemMessage('⏳ Still waiting for a match. Please wait...');
+        return;
+      }
+      socket.emit('message', msg);
+      addMessage(msg, 'you');
+      inputEl.value = '';
+    }
+
+    function addMessage(msg, sender) {
+      const li = document.createElement('li');
+      li.className = sender;
+      li.textContent = msg;
+      messagesEl.appendChild(li);
+      messagesEl.scrollTop = messagesEl.scrollHeight;
+    }
+
+    function addSystemMessage(text) {
+      const li = document.createElement('li');
+      li.className = 'system';
+      li.textContent = text;
+      messagesEl.appendChild(li);
+      messagesEl.scrollTop = messagesEl.scrollHeight;
+    }
+  </script>
+</body>
+</html>
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Anon Chat</title>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600&display=swap" rel="stylesheet">
+  <style>
+    * {
+      box-sizing: border-box;
+    }
+    body {
+      margin: 0;
+      font-family: 'Inter', sans-serif;
+      background: #f9fafb;
+      color: #1f2937;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      padding: 30px 20px;
+      min-height: 100vh;
+    }
+    h1 {
+      font-size: 2.2rem;
+      margin-bottom: 10px;
+      color: #111827;
+    }
+    #status {
+      margin-bottom: 20px;
+      font-size: 1rem;
+      color: #374151;
+    }
+    #welcomeScreen {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 20px;
+    }
+    #welcomeScreen button {
+      background-color: #2563eb;
+      border: none;
+      color: white;
+      padding: 12px 24px;
+      border-radius: 8px;
+      font-weight: 600;
+      font-size: 1rem;
+      cursor: pointer;
+      transition: background 0.2s;
+    }
+    #welcomeScreen button:hover {
+      background-color: #1d4ed8;
+    }
+    #chat {
+      display: none;
+      background: #ffffff;
+      border-radius: 12px;
+      padding: 20px;
+      width: 100%;
+      max-width: 520px;
+      box-shadow: 0 4px 16px rgba(0,0,0,0.1);
+      flex-direction: column;
+      gap: 12px;
+      border: 1px solid #e5e7eb;
+    }
+    #messages {
+      list-style: none;
+      padding: 0;
+      margin: 0;
+      overflow-y: auto;
+      max-height: 350px;
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+      scrollbar-width: thin;
+    }
+    #messages li {
+      padding: 10px 14px;
+      border-radius: 16px;
+      max-width: 80%;
+      word-wrap: break-word;
+      font-size: 0.95rem;
+      line-height: 1.4;
+    }
+    .you {
+      background-color: #d1fae5;
+      align-self: flex-end;
+      color: #065f46;
+    }
+    .stranger {
+      background-color: #e0e7ff;
+      align-self: flex-start;
+      color: #3730a3;
+    }
+    .system {
+      font-style: italic;
+      text-align: center;
+      color: #6b7280;
+    }
+    #inputArea {
+      display: flex;
+      gap: 10px;
+    }
+    #msg {
+      flex: 1;
+      padding: 10px;
+      border-radius: 8px;
+      border: 1px solid #d1d5db;
+      font-size: 1rem;
+      background: #f3f4f6;
+      color: #111827;
+    }
+    #msg:focus {
+      outline: 2px solid #2563eb;
+    }
+    button.send-btn {
+      background-color: #2563eb;
+      border: none;
+      color: white;
+      padding: 10px 20px;
+      border-radius: 8px;
+      font-weight: 600;
+      cursor: pointer;
+      transition: background 0.2s;
+    }
+    button.send-btn:hover {
+      background-color: #1d4ed8;
+    }
+  </style>
+</head>
+<body>
+  <h1>Anon Chat 💬</h1>
+  <div id="status">Do you want to connect and chat anonymously?</div>
+
+  <div id="welcomeScreen">
+    <button onclick="startChat()">Start Anonymous Chat</button>
+  </div>
+
+  <div id="chat">
+    <ul id="messages"></ul>
+    <div id="inputArea">
+      <input id="msg" placeholder="Type a message..." autocomplete="off" />
+      <button class="send-btn" onclick="send()">Send</button>
+    </div>
+  </div>
+
+  <script src="https://cdn.socket.io/4.7.2/socket.io.min.js"></script>
+  <script>
+    const SERVER = 'https://anon-chat-server-9f1c.onrender.com';
+    let socket;
+    let isMatched = false;
+
+    const statusEl = document.getElementById('status');
+    const chatBox = document.getElementById('chat');
+    const welcome = document.getElementById('welcomeScreen');
+    const messagesEl = document.getElementById('messages');
+    const inputEl = document.getElementById('msg');
+
+    function startChat() {
+      welcome.style.display = 'none';
+      chatBox.style.display = 'flex';
+      statusEl.textContent = '🔌 Connecting...';
+
+      socket = io(SERVER);
+
+      socket.on('connect', () => {
+        statusEl.textContent = '🟢 Connected - Waiting for a stranger...';
+      });
+
+      socket.on('userCount', (count) => {
+        // Optional: live user count logic
+      });
+
+      socket.on('matched', () => {
+        isMatched = true;
+        statusEl.textContent = '🎯 Connected to a stranger!';
+        addSystemMessage('🎉 You are now connected to a stranger.');
+      });
+
+      socket.on('partnerDisconnected', () => {
+        isMatched = false;
+        statusEl.textContent = '⚠️ Stranger disconnected. Waiting for new match...';
+        addSystemMessage('⚠️ Stranger disconnected.');
+      });
+
+      socket.on('message', (msg) => {
+        addMessage(msg, 'stranger');
+      });
+    }
+
+    function send() {
+      const msg = inputEl.value.trim();
+      if (!msg || !isMatched) {
+        if (!isMatched) addSystemMessage('⏳ Still waiting for a match. Please wait...');
         return;
       }
       socket.emit('message', msg);
