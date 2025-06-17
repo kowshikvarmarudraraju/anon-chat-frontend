@@ -71,7 +71,7 @@
       padding: 0;
       margin: 0;
       overflow-y: auto;
-      max-height: 350px;
+      max-height: 300px;
       display: flex;
       flex-direction: column;
       gap: 10px;
@@ -103,20 +103,22 @@
     #inputArea {
       display: flex;
       gap: 10px;
+      flex-wrap: wrap;
     }
     #msg {
-      flex: 1;
+      flex: 1 1 auto;
       padding: 10px;
       border-radius: 8px;
       border: 1px solid #d1d5db;
       font-size: 1rem;
       background: #f3f4f6;
       color: #111827;
+      min-width: 0;
     }
     #msg:focus {
       outline: 2px solid #2563eb;
     }
-    button.send-btn {
+    button.send-btn, button.control-btn {
       background-color: #2563eb;
       border: none;
       color: white;
@@ -126,7 +128,7 @@
       cursor: pointer;
       transition: background 0.2s;
     }
-    button.send-btn:hover {
+    button.send-btn:hover, button.control-btn:hover {
       background-color: #1d4ed8;
     }
   </style>
@@ -143,6 +145,8 @@
     <div id="inputArea">
       <input id="msg" placeholder="Type a message..." autocomplete="off" />
       <button class="send-btn" onclick="send()">Send</button>
+      <button class="control-btn" onclick="disconnectChat()">Disconnect</button>
+      <button class="control-btn" onclick="nextStranger()">Next</button>
     </div>
   </div>
 
@@ -199,6 +203,24 @@
       socket.emit('message', msg);
       addMessage(msg, 'you');
       inputEl.value = '';
+    }
+
+    function disconnectChat() {
+      if (socket) {
+        socket.disconnect();
+        addSystemMessage('❌ You disconnected from the chat.');
+        statusEl.textContent = 'You have disconnected.';
+        isMatched = false;
+      }
+    }
+
+    function nextStranger() {
+      if (socket) {
+        socket.disconnect();
+        addSystemMessage('🔁 Searching for next stranger...');
+        isMatched = false;
+        setTimeout(startChat, 500);
+      }
     }
 
     function addMessage(msg, sender) {
