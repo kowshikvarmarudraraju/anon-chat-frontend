@@ -1,0 +1,59 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Anonymous Chat</title>
+  <style>
+    body { font-family: Arial; padding: 20px; }
+    #messages { list-style: none; padding: 0; max-height: 300px; overflow-y: scroll; }
+    #messages li { padding: 5px; border-bottom: 1px solid #ddd; }
+  </style>
+</head>
+<body>
+  <h1>Anon Chat</h1>
+  <p><strong>Online Users:</strong> <span id="count">...</span></p>
+  <input id="msg" placeholder="Type message..." />
+  <button onclick="send()">Send</button>
+  <ul id="messages"></ul>
+
+  <script>
+    const BACKEND_URL = "https://anon-chat-server-9f1c.onrender.com"; // your real backend
+
+    async function send() {
+      const msg = document.getElementById("msg").value;
+      await fetch(`${BACKEND_URL}/send`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ message: msg })
+      });
+      document.getElementById("msg").value = "";
+      load();
+    }
+
+    async function load() {
+      const res = await fetch(`${BACKEND_URL}/messages`);
+      const messages = await res.json();
+      const list = document.getElementById("messages");
+      list.innerHTML = "";
+      messages.forEach(m => {
+        const li = document.createElement("li");
+        li.textContent = m.message;
+        list.appendChild(li);
+      });
+    }
+
+    async function updateUserCount() {
+      const res = await fetch(`${BACKEND_URL}/users`);
+      const data = await res.json();
+      document.getElementById("count").textContent = data.count;
+    }
+
+    setInterval(() => {
+      load();
+      updateUserCount();
+    }, 2000);
+
+    load();
+    updateUserCount();
+  </script>
+</body>
+</html>
