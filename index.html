@@ -2,108 +2,67 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Anon Chat</title>
-  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600&display=swap" rel="stylesheet">
   <style>
-    * { box-sizing: border-box; }
     body {
-      margin: 0;
       font-family: 'Inter', sans-serif;
       background: #f9fafb;
-      color: #1f2937;
+      margin: 0;
+      padding: 20px;
       display: flex;
       flex-direction: column;
       align-items: center;
-      justify-content: center;
-      padding: 30px 20px;
-      min-height: 100vh;
-    }
-    h1 {
-      font-size: 2.2rem;
-      margin-bottom: 6px;
-      color: #111827;
-      display: flex;
-      align-items: center;
-      gap: 0.5rem;
-    }
-    #status {
-      margin-bottom: 20px;
-      font-size: 1rem;
-      color: #374151;
-    }
-    #welcomeScreen {
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      gap: 20px;
-    }
-    #welcomeScreen button {
-      background-color: #2563eb;
-      border: none;
-      color: white;
-      padding: 12px 24px;
-      border-radius: 8px;
-      font-weight: 600;
-      font-size: 1rem;
-      cursor: pointer;
-      transition: background 0.2s;
     }
     #chat {
-      display: none;
-      background: #ffffff;
-      border-radius: 12px;
-      padding: 20px;
-      width: 100%;
-      max-width: 520px;
-      box-shadow: 0 4px 16px rgba(0,0,0,0.1);
+      display: flex;
       flex-direction: column;
-      gap: 12px;
-      border: 1px solid #e5e7eb;
+      background: white;
+      border-radius: 12px;
+      box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+      padding: 16px;
+      max-width: 600px;
+      width: 100%;
+      border: 1px solid #ddd;
     }
     #messages {
       list-style: none;
       padding: 0;
-      margin: 0;
-      overflow-y: auto;
+      margin: 0 0 16px 0;
       max-height: 300px;
-      display: flex;
-      flex-direction: column;
-      gap: 10px;
+      overflow-y: auto;
     }
     #messages li {
+      margin: 6px 0;
       padding: 10px 14px;
       border-radius: 16px;
-      max-width: 80%;
-      word-wrap: break-word;
-      font-size: 0.95rem;
-      line-height: 1.4;
+      max-width: 75%;
     }
     .you {
-      background-color: #d1fae5;
+      background: #d1fae5;
       align-self: flex-end;
-      color: #065f46;
     }
     .stranger {
-      background-color: #e0e7ff;
+      background: #e0e7ff;
       align-self: flex-start;
-      color: #3730a3;
     }
     .system {
-      font-style: italic;
       text-align: center;
-      color: #6b7280;
+      color: #666;
+      font-style: italic;
     }
     #inputArea {
       display: flex;
-      justify-content: space-between;
       align-items: center;
       gap: 10px;
       flex-wrap: nowrap;
+      justify-content: space-between;
     }
     #left-controls {
       display: flex;
       gap: 10px;
+      align-items: center;
+      margin-right: 10px;
     }
     #right-controls {
       display: flex;
@@ -111,27 +70,23 @@
       flex: 1;
       justify-content: flex-end;
       flex-wrap: nowrap;
+      align-items: center;
     }
     #msg {
       flex: 1;
       padding: 10px;
-      border-radius: 8px;
-      border: 1px solid #d1d5db;
-      font-size: 1rem;
-      background: #f3f4f6;
-      color: #111827;
-      min-width: 0;
+      border-radius: 6px;
+      border: 1px solid #ccc;
     }
-    button.send-btn, button.control-btn {
-      background-color: #2563eb;
-      border: none;
+    .send-btn,
+    .control-btn {
+      background: #2563eb;
       color: white;
+      border: none;
       padding: 10px 16px;
       border-radius: 8px;
-      font-weight: 600;
       cursor: pointer;
-      transition: background 0.2s;
-      white-space: nowrap;
+      font-weight: 600;
     }
 
     @media screen and (max-width: 600px) {
@@ -156,6 +111,7 @@
         display: flex;
         justify-content: space-between;
         width: 100%;
+        margin-right: 0;
       }
       #left-controls .control-btn {
         width: 48%;
@@ -164,64 +120,50 @@
   </style>
 </head>
 <body>
-  <div id="welcomeScreen">
-    <h1>Anon Chat 💬</h1>
-    <div id="status">Do you want to connect and chat anonymously?</div>
-    <button onclick="startChat()">Start Anonymous Chat</button>
-  </div>
   <div id="chat">
     <ul id="messages"></ul>
     <div id="inputArea">
-      <div id="right-controls">
-        <input id="msg" placeholder="Type a message..." autocomplete="off" />
-        <button class="send-btn" onclick="send()">Send</button>
-      </div>
       <div id="left-controls">
         <button class="control-btn" onclick="disconnectChat()">Disconnect</button>
         <button class="control-btn" onclick="nextStranger()">Next</button>
       </div>
+      <div id="right-controls">
+        <input id="msg" placeholder="Type a message..." />
+        <button class="send-btn" onclick="send()">Send</button>
+      </div>
     </div>
   </div>
+
   <script src="https://cdn.socket.io/4.7.2/socket.io.min.js"></script>
   <script>
     const SERVER = 'https://anon-chat-server-9f1c.onrender.com';
     let socket;
     let isMatched = false;
-    const statusEl = document.getElementById('status');
-    const chatBox = document.getElementById('chat');
-    const welcome = document.getElementById('welcomeScreen');
+
     const messagesEl = document.getElementById('messages');
     const inputEl = document.getElementById('msg');
 
     function startChat() {
-      welcome.style.display = 'none';
-      chatBox.style.display = 'flex';
-      statusEl.textContent = '🔌 Connecting...';
       socket = io(SERVER);
       socket.on('connect', () => {
-        statusEl.textContent = '🟢 Connected - Waiting for a stranger...';
+        addSystemMessage('Connected. Waiting for a stranger...');
       });
       socket.on('matched', () => {
         isMatched = true;
-        statusEl.textContent = '🎯 Connected to a stranger!';
-        addSystemMessage('🎉 You are now connected to a stranger.');
+        addSystemMessage('🎯 Connected to a stranger!');
       });
       socket.on('partnerDisconnected', () => {
         isMatched = false;
-        statusEl.textContent = '⚠️ Stranger disconnected. Waiting for new match...';
         addSystemMessage('⚠️ Stranger disconnected.');
       });
-      socket.on('message', (msg) => {
+      socket.on('message', msg => {
         addMessage(msg, 'stranger');
       });
     }
 
     function send() {
       const msg = inputEl.value.trim();
-      if (!msg || !isMatched) {
-        if (!isMatched) addSystemMessage('⏳ Still waiting for a match. Please wait...');
-        return;
-      }
+      if (!msg || !isMatched) return;
       socket.emit('message', msg);
       addMessage(msg, 'you');
       inputEl.value = '';
@@ -230,9 +172,8 @@
     function disconnectChat() {
       if (socket) {
         socket.disconnect();
-        addSystemMessage('❌ You disconnected from the chat.');
-        statusEl.textContent = 'You have disconnected.';
         isMatched = false;
+        addSystemMessage('❌ You disconnected.');
       }
     }
 
@@ -241,7 +182,7 @@
         socket.disconnect();
         addSystemMessage('🔁 Searching for next stranger...');
         isMatched = false;
-        setTimeout(startChat, 500);
+        setTimeout(startChat, 300);
       }
     }
 
@@ -260,6 +201,8 @@
       messagesEl.appendChild(li);
       messagesEl.scrollTop = messagesEl.scrollHeight;
     }
+
+    startChat();
   </script>
 </body>
 </html>
