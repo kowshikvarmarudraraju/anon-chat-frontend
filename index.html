@@ -102,11 +102,22 @@
     }
     #inputArea {
       display: flex;
+      justify-content: space-between;
+      align-items: center;
       gap: 10px;
       flex-wrap: wrap;
     }
+    #left-controls {
+      display: flex;
+      gap: 10px;
+    }
+    #right-controls {
+      display: flex;
+      gap: 10px;
+      flex: 1;
+    }
     #msg {
-      flex: 1 1 auto;
+      flex: 1;
       padding: 10px;
       border-radius: 8px;
       border: 1px solid #d1d5db;
@@ -122,11 +133,12 @@
       background-color: #2563eb;
       border: none;
       color: white;
-      padding: 10px 20px;
+      padding: 10px 16px;
       border-radius: 8px;
       font-weight: 600;
       cursor: pointer;
       transition: background 0.2s;
+      white-space: nowrap;
     }
     button.send-btn:hover, button.control-btn:hover {
       background-color: #1d4ed8;
@@ -143,10 +155,14 @@
   <div id="chat">
     <ul id="messages"></ul>
     <div id="inputArea">
-      <input id="msg" placeholder="Type a message..." autocomplete="off" />
-      <button class="send-btn" onclick="send()">Send</button>
-      <button class="control-btn" onclick="disconnectChat()">Disconnect</button>
-      <button class="control-btn" onclick="nextStranger()">Next</button>
+      <div id="left-controls">
+        <button class="control-btn" onclick="nextStranger()">Next</button>
+      </div>
+      <div id="right-controls">
+        <input id="msg" placeholder="Type a message..." autocomplete="off" />
+        <button class="send-btn" onclick="send()">Send</button>
+        <button class="control-btn" onclick="disconnectChat()">Disconnect</button>
+      </div>
     </div>
   </div>
 
