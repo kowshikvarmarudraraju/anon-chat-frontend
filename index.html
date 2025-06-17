@@ -126,8 +126,10 @@
     const messagesEl = document.getElementById('messages');
     const inputEl = document.getElementById('msg');
 
+    let isMatched = false;
+
     socket.on('connect', () => {
-      statusEl.textContent = '🟢 Connected';
+      statusEl.textContent = '🟢 Connected - Waiting for a stranger...';
     });
 
     socket.on('userCount', (count) => {
@@ -135,10 +137,14 @@
     });
 
     socket.on('matched', () => {
+      isMatched = true;
+      statusEl.textContent = '🎯 Connected to a stranger!';
       addSystemMessage('🎉 You are now connected to a stranger.');
     });
 
     socket.on('partnerDisconnected', () => {
+      isMatched = false;
+      statusEl.textContent = '⚠️ Stranger disconnected. Waiting for new match...';
       addSystemMessage('⚠️ Stranger disconnected.');
     });
 
@@ -148,7 +154,12 @@
 
     function send() {
       const msg = inputEl.value.trim();
-      if (!msg) return;
+      if (!msg || !isMatched) {
+        if (!isMatched) {
+          addSystemMessage('⏳ Still waiting for a match. Please wait...');
+        }
+        return;
+      }
       socket.emit('message', msg);
       addMessage(msg, 'you');
       inputEl.value = '';
