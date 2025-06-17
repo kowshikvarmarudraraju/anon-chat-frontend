@@ -105,7 +105,7 @@
       justify-content: space-between;
       align-items: center;
       gap: 10px;
-      flex-wrap: wrap;
+      flex-wrap: nowrap;
     }
     #left-controls {
       display: flex;
@@ -115,6 +115,8 @@
       display: flex;
       gap: 10px;
       flex: 1;
+      justify-content: flex-end;
+      flex-wrap: nowrap;
     }
     #msg {
       flex: 1;
@@ -142,6 +144,27 @@
     }
     button.send-btn:hover, button.control-btn:hover {
       background-color: #1d4ed8;
+    }
+
+    @media screen and (max-width: 600px) {
+      #inputArea {
+        flex-direction: column;
+        gap: 8px;
+        align-items: stretch;
+      }
+      #left-controls, #right-controls {
+        flex-direction: row;
+        justify-content: space-between;
+        flex-wrap: wrap;
+      }
+      #right-controls {
+        flex-direction: column;
+        width: 100%;
+        gap: 8px;
+      }
+      #msg, button.send-btn, button.control-btn {
+        width: 100%;
+      }
     }
   </style>
 </head>
