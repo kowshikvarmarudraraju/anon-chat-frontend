@@ -6,9 +6,7 @@
   <title>Anon Chat</title>
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600&display=swap" rel="stylesheet">
   <style>
-    * {
-      box-sizing: border-box;
-    }
+    * { box-sizing: border-box; }
     body {
       margin: 0;
       font-family: 'Inter', sans-serif;
@@ -51,9 +49,6 @@
       cursor: pointer;
       transition: background 0.2s;
     }
-    #welcomeScreen button:hover {
-      background-color: #1d4ed8;
-    }
     #chat {
       display: none;
       background: #ffffff;
@@ -75,7 +70,6 @@
       display: flex;
       flex-direction: column;
       gap: 10px;
-      scrollbar-width: thin;
     }
     #messages li {
       padding: 10px 14px;
@@ -128,9 +122,6 @@
       color: #111827;
       min-width: 0;
     }
-    #msg:focus {
-      outline: 2px solid #2563eb;
-    }
     button.send-btn, button.control-btn {
       background-color: #2563eb;
       border: none;
@@ -142,9 +133,6 @@
       transition: background 0.2s;
       white-space: nowrap;
     }
-    button.send-btn:hover, button.control-btn:hover {
-      background-color: #1d4ed8;
-    }
 
     @media screen and (max-width: 600px) {
       #inputArea {
@@ -152,18 +140,25 @@
         gap: 8px;
         align-items: stretch;
       }
-      #left-controls, #right-controls {
+      #right-controls {
+        display: flex;
         flex-direction: row;
         justify-content: space-between;
-        flex-wrap: wrap;
+        gap: 10px;
       }
-      #right-controls {
-        flex-direction: column;
-        width: 100%;
-        gap: 8px;
+      #msg {
+        width: 65%;
       }
-      #msg, button.send-btn, button.control-btn {
+      .send-btn {
+        width: 30%;
+      }
+      #left-controls {
+        display: flex;
+        justify-content: space-between;
         width: 100%;
+      }
+      #left-controls .control-btn {
+        width: 48%;
       }
     }
   </style>
@@ -174,27 +169,24 @@
     <div id="status">Do you want to connect and chat anonymously?</div>
     <button onclick="startChat()">Start Anonymous Chat</button>
   </div>
-
   <div id="chat">
     <ul id="messages"></ul>
     <div id="inputArea">
-      <div id="left-controls">
-        <button class="control-btn" onclick="nextStranger()">Next</button>
-      </div>
       <div id="right-controls">
         <input id="msg" placeholder="Type a message..." autocomplete="off" />
         <button class="send-btn" onclick="send()">Send</button>
+      </div>
+      <div id="left-controls">
         <button class="control-btn" onclick="disconnectChat()">Disconnect</button>
+        <button class="control-btn" onclick="nextStranger()">Next</button>
       </div>
     </div>
   </div>
-
   <script src="https://cdn.socket.io/4.7.2/socket.io.min.js"></script>
   <script>
     const SERVER = 'https://anon-chat-server-9f1c.onrender.com';
     let socket;
     let isMatched = false;
-
     const statusEl = document.getElementById('status');
     const chatBox = document.getElementById('chat');
     const welcome = document.getElementById('welcomeScreen');
@@ -205,29 +197,20 @@
       welcome.style.display = 'none';
       chatBox.style.display = 'flex';
       statusEl.textContent = '🔌 Connecting...';
-
       socket = io(SERVER);
-
       socket.on('connect', () => {
         statusEl.textContent = '🟢 Connected - Waiting for a stranger...';
       });
-
-      socket.on('userCount', (count) => {
-        // Optional: live user count logic
-      });
-
       socket.on('matched', () => {
         isMatched = true;
         statusEl.textContent = '🎯 Connected to a stranger!';
         addSystemMessage('🎉 You are now connected to a stranger.');
       });
-
       socket.on('partnerDisconnected', () => {
         isMatched = false;
         statusEl.textContent = '⚠️ Stranger disconnected. Waiting for new match...';
         addSystemMessage('⚠️ Stranger disconnected.');
       });
-
       socket.on('message', (msg) => {
         addMessage(msg, 'stranger');
       });
