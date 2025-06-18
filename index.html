@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
   <title>Anon Chat</title>
   <style>
     html, body {
@@ -12,33 +12,27 @@
       font-family: 'Inter', sans-serif;
       background: #f9fafb;
     }
-
     body {
       display: flex;
       justify-content: center;
       align-items: center;
     }
-
     .container {
       max-width: 600px;
       width: 100%;
       background: white;
       padding: 20px;
       border-radius: 12px;
-      box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+      box-shadow: 0 2px 8px rgba(0,0,0,0.1);
       display: none;
       flex-direction: column;
       gap: 16px;
     }
-
     #welcomeScreen {
       display: flex;
-      align-items: center;
-      justify-content: center;
       flex-direction: column;
       text-align: center;
     }
-
     #welcomeScreen button {
       padding: 10px 24px;
       background-color: #2563eb;
@@ -49,7 +43,12 @@
       border-radius: 8px;
       cursor: pointer;
     }
-
+    #onlineCount {
+      font-size: 14px;
+      color: #6b7280;
+      margin-bottom: 5px;
+      text-align: center;
+    }
     #messages {
       list-style: none;
       padding: 0;
@@ -58,31 +57,27 @@
       overflow-y: auto;
       display: flex;
       flex-direction: column;
+      scroll-behavior: smooth;
     }
-
     #messages li {
       margin: 6px 0;
       padding: 10px 14px;
       border-radius: 16px;
       max-width: 75%;
     }
-
-    .you {
-      background: #d1fae5;
-      align-self: flex-end;
-    }
-
-    .stranger {
-      background: #e0e7ff;
-      align-self: flex-start;
-    }
-
+    .you { background: #d1fae5; align-self: flex-end; }
+    .stranger { background: #e0e7ff; align-self: flex-start; }
     .system {
       text-align: center;
       color: #666;
       font-style: italic;
     }
-
+    #typingStatus {
+      text-align: center;
+      font-size: 13px;
+      color: #888;
+      margin-top: -10px;
+    }
     #inputArea {
       display: flex;
       align-items: center;
@@ -90,14 +85,12 @@
       flex-wrap: nowrap;
       justify-content: space-between;
     }
-
     #left-controls {
       display: flex;
       gap: 10px;
       align-items: center;
       margin-right: 10px;
     }
-
     #right-controls {
       display: flex;
       gap: 10px;
@@ -106,14 +99,12 @@
       flex-wrap: nowrap;
       align-items: center;
     }
-
     #msg {
       flex: 1;
       padding: 10px;
       border-radius: 6px;
       border: 1px solid #ccc;
     }
-
     .send-btn, .control-btn {
       background: #2563eb;
       color: white;
@@ -123,45 +114,31 @@
       cursor: pointer;
       font-weight: 600;
     }
-
     @media screen and (max-width: 600px) {
       body {
         padding: 10px;
         align-items: flex-start;
       }
-
       .container {
         margin-top: 30px;
       }
-
       #inputArea {
         flex-direction: column;
         gap: 8px;
         align-items: stretch;
       }
-
       #right-controls {
-        display: flex;
         flex-direction: row;
         justify-content: space-between;
         gap: 10px;
       }
-
-      #msg {
-        width: 65%;
-      }
-
-      .send-btn {
-        width: 30%;
-      }
-
+      #msg { width: 65%; }
+      .send-btn { width: 30%; }
       #left-controls {
-        display: flex;
         justify-content: space-between;
         width: 100%;
         margin-right: 0;
       }
-
       #left-controls .control-btn {
         width: 48%;
       }
@@ -179,7 +156,9 @@
 
   <!-- Chat -->
   <div class="container" id="chat">
+    <div id="onlineCount">🟢 Online: 0</div>
     <ul id="messages"></ul>
+    <div id="typingStatus"></div>
     <div id="inputArea">
       <div id="left-controls">
         <button class="control-btn" onclick="disconnectChat()">Disconnect</button>
@@ -197,14 +176,22 @@
     const SERVER = 'https://anon-chat-server-9f1c.onrender.com';
     let socket;
     let isMatched = false;
+    let typingTimeout;
 
+    const welcomeEl = document.getElementById('welcomeScreen');
+    const chatEl = document.getElementById('chat');
     const messagesEl = document.getElementById('messages');
     const inputEl = document.getElementById('msg');
+    const typingStatus = document.getElementById('typingStatus');
+    const onlineCount = document.getElementById('onlineCount');
 
     function startChat() {
-      document.getElementById('welcomeScreen').style.display = 'none';
-      document.getElementById('chat').style.display = 'flex';
+      welcomeEl.style.display = 'none';
+      chatEl.style.display = 'flex';
+      connectToServer();
+    }
 
+    function connectToServer() {
       socket = io(SERVER);
 
       socket.on('connect', () => {
@@ -218,10 +205,23 @@
 
       socket.on('partnerDisconnected', () => {
         isMatched = false;
-        addSystemMessage('⚠️ Stranger disconnected.');
+        clearChat();
+        addSystemMessage('⚠️ Stranger disconnected. Searching again...');
+        setTimeout(connectToServer, 300); // auto reconnect
+      });
+
+      socket.on('userCount', (count) => {
+        onlineCount.textContent = `🟢 Online: ${count}`;
+      });
+
+      socket.on('typing', () => {
+        typingStatus.textContent = 'Stranger is typing...';
+        clearTimeout(typingTimeout);
+        typingTimeout = setTimeout(() => typingStatus.textContent = '', 2000);
       });
 
       socket.on('message', msg => {
+        typingStatus.textContent = '';
         addMessage(msg, 'stranger');
       });
     }
@@ -233,6 +233,12 @@
       addMessage(msg, 'you');
       inputEl.value = '';
     }
+
+    inputEl.addEventListener('input', () => {
+      if (isMatched) {
+        socket.emit('typing');
+      }
+    });
 
     function disconnectChat() {
       if (socket) {
@@ -247,14 +253,15 @@
       if (socket) {
         socket.disconnect();
         clearChat();
-        addSystemMessage('🔁 Searching for next stranger...');
         isMatched = false;
-        setTimeout(startChat, 300);
+        addSystemMessage('🔁 Searching for next stranger...');
+        setTimeout(connectToServer, 300);
       }
     }
 
     function clearChat() {
       messagesEl.innerHTML = '';
+      typingStatus.textContent = '';
     }
 
     function addMessage(msg, sender) {
