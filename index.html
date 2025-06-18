@@ -14,21 +14,38 @@
       flex-direction: column;
       align-items: center;
     }
-    #chat {
-      display: flex;
-      flex-direction: column;
+    #chat, #welcomeScreen {
       background: white;
       border-radius: 12px;
       box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
-      padding: 16px;
+      padding: 20px;
       max-width: 600px;
       width: 100%;
       border: 1px solid #ddd;
+      display: none;
+      flex-direction: column;
+      gap: 16px;
+    }
+    #welcomeScreen {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      text-align: center;
+    }
+    #welcomeScreen button {
+      padding: 10px 24px;
+      background-color: #2563eb;
+      color: white;
+      font-weight: bold;
+      font-size: 1rem;
+      border: none;
+      border-radius: 8px;
+      cursor: pointer;
     }
     #messages {
       list-style: none;
       padding: 0;
-      margin: 0 0 16px 0;
+      margin: 0;
       max-height: 300px;
       overflow-y: auto;
     }
@@ -78,8 +95,7 @@
       border-radius: 6px;
       border: 1px solid #ccc;
     }
-    .send-btn,
-    .control-btn {
+    .send-btn, .control-btn {
       background: #2563eb;
       color: white;
       border: none;
@@ -120,6 +136,17 @@
   </style>
 </head>
 <body>
+
+  <!-- Welcome Screen -->
+  <div id="welcomeScreen">
+    <div>
+      <h1>Anon Chat 💬</h1>
+      <p>Connect with a stranger. Completely anonymous.</p>
+      <button onclick="startChat()">Start Anonymous Chat</button>
+    </div>
+  </div>
+
+  <!-- Chat Screen -->
   <div id="chat">
     <ul id="messages"></ul>
     <div id="inputArea">
@@ -144,18 +171,25 @@
     const inputEl = document.getElementById('msg');
 
     function startChat() {
+      document.getElementById('welcomeScreen').style.display = 'none';
+      document.getElementById('chat').style.display = 'flex';
+
       socket = io(SERVER);
+
       socket.on('connect', () => {
         addSystemMessage('Connected. Waiting for a stranger...');
       });
+
       socket.on('matched', () => {
         isMatched = true;
         addSystemMessage('🎯 Connected to a stranger!');
       });
+
       socket.on('partnerDisconnected', () => {
         isMatched = false;
         addSystemMessage('⚠️ Stranger disconnected.');
       });
+
       socket.on('message', msg => {
         addMessage(msg, 'stranger');
       });
@@ -201,8 +235,6 @@
       messagesEl.appendChild(li);
       messagesEl.scrollTop = messagesEl.scrollHeight;
     }
-
-    startChat();
   </script>
 </body>
 </html>
