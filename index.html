@@ -43,12 +43,6 @@
       border-radius: 8px;
       cursor: pointer;
     }
-    #onlineCount {
-      font-size: 14px;
-      color: #6b7280;
-      margin-bottom: 5px;
-      text-align: center;
-    }
     #messages {
       list-style: none;
       padding: 0;
@@ -156,7 +150,6 @@
 
   <!-- Chat -->
   <div class="container" id="chat">
-    <div id="onlineCount">🟢 Online: 0</div>
     <ul id="messages"></ul>
     <div id="typingStatus"></div>
     <div id="inputArea">
@@ -183,7 +176,6 @@
     const messagesEl = document.getElementById('messages');
     const inputEl = document.getElementById('msg');
     const typingStatus = document.getElementById('typingStatus');
-    const onlineCount = document.getElementById('onlineCount');
 
     function startChat() {
       welcomeEl.style.display = 'none';
@@ -208,10 +200,6 @@
         clearChat();
         addSystemMessage('⚠️ Stranger disconnected. Searching again...');
         setTimeout(connectToServer, 300); // auto reconnect
-      });
-
-      socket.on('userCount', (count) => {
-        onlineCount.textContent = `🟢 Online: ${count}`;
       });
 
       socket.on('typing', () => {
