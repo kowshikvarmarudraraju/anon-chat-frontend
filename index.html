@@ -5,33 +5,40 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Anon Chat</title>
   <style>
-    body {
+    html, body {
+      margin: 0;
+      padding: 0;
+      height: 100%;
       font-family: 'Inter', sans-serif;
       background: #f9fafb;
-      margin: 0;
-      padding: 20px;
+    }
+
+    body {
       display: flex;
-      flex-direction: column;
+      justify-content: center;
       align-items: center;
     }
-    #chat, #welcomeScreen {
-      background: white;
-      border-radius: 12px;
-      box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
-      padding: 20px;
+
+    .container {
       max-width: 600px;
       width: 100%;
-      border: 1px solid #ddd;
+      background: white;
+      padding: 20px;
+      border-radius: 12px;
+      box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
       display: none;
       flex-direction: column;
       gap: 16px;
     }
+
     #welcomeScreen {
       display: flex;
       align-items: center;
       justify-content: center;
+      flex-direction: column;
       text-align: center;
     }
+
     #welcomeScreen button {
       padding: 10px 24px;
       background-color: #2563eb;
@@ -42,6 +49,7 @@
       border-radius: 8px;
       cursor: pointer;
     }
+
     #messages {
       list-style: none;
       padding: 0;
@@ -49,25 +57,30 @@
       max-height: 300px;
       overflow-y: auto;
     }
+
     #messages li {
       margin: 6px 0;
       padding: 10px 14px;
       border-radius: 16px;
       max-width: 75%;
     }
+
     .you {
       background: #d1fae5;
       align-self: flex-end;
     }
+
     .stranger {
       background: #e0e7ff;
       align-self: flex-start;
     }
+
     .system {
       text-align: center;
       color: #666;
       font-style: italic;
     }
+
     #inputArea {
       display: flex;
       align-items: center;
@@ -75,12 +88,14 @@
       flex-wrap: nowrap;
       justify-content: space-between;
     }
+
     #left-controls {
       display: flex;
       gap: 10px;
       align-items: center;
       margin-right: 10px;
     }
+
     #right-controls {
       display: flex;
       gap: 10px;
@@ -89,12 +104,14 @@
       flex-wrap: nowrap;
       align-items: center;
     }
+
     #msg {
       flex: 1;
       padding: 10px;
       border-radius: 6px;
       border: 1px solid #ccc;
     }
+
     .send-btn, .control-btn {
       background: #2563eb;
       color: white;
@@ -106,29 +123,43 @@
     }
 
     @media screen and (max-width: 600px) {
+      body {
+        padding: 10px;
+        align-items: flex-start;
+      }
+
+      .container {
+        margin-top: 30px;
+      }
+
       #inputArea {
         flex-direction: column;
         gap: 8px;
         align-items: stretch;
       }
+
       #right-controls {
         display: flex;
         flex-direction: row;
         justify-content: space-between;
         gap: 10px;
       }
+
       #msg {
         width: 65%;
       }
+
       .send-btn {
         width: 30%;
       }
+
       #left-controls {
         display: flex;
         justify-content: space-between;
         width: 100%;
         margin-right: 0;
       }
+
       #left-controls .control-btn {
         width: 48%;
       }
@@ -137,17 +168,15 @@
 </head>
 <body>
 
-  <!-- Welcome Screen -->
-  <div id="welcomeScreen">
-    <div>
-      <h1>Anon Chat 💬</h1>
-      <p>Connect with a stranger. Completely anonymous.</p>
-      <button onclick="startChat()">Start Anonymous Chat</button>
-    </div>
+  <!-- Welcome -->
+  <div class="container" id="welcomeScreen">
+    <h1>Anon Chat 💬</h1>
+    <p>Connect with a stranger. Completely anonymous.</p>
+    <button onclick="startChat()">Start Anonymous Chat</button>
   </div>
 
-  <!-- Chat Screen -->
-  <div id="chat">
+  <!-- Chat -->
+  <div class="container" id="chat">
     <ul id="messages"></ul>
     <div id="inputArea">
       <div id="left-controls">
